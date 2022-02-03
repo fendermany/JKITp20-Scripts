@@ -6,7 +6,7 @@ echo "Text document which contains users should be placed in directory src"
 echo -e "\n"
 read -p "Enter name of the file which contains users with params: " FILE_USERS
 
-USERS_PATH="./src/$FILE_USERS"
+USERS_PATH="../src/$FILE_USERS"
 
 if [[ -f $USERS_PATH ]]; then 
 	IFS=$'\n'
@@ -43,11 +43,17 @@ if [[ -f $USERS_PATH ]]; then
 			esac
 
 		elif [[ `grep $username "/etc/passwd"` ]]; then
+			exist_group=`id -gn $username`
 			echo -e "$username was found in system!"
 			read -p "Do you want to make some changes for $username? (yes/no): " ANSWER_CHANGES
 			case $ANSWER_CHANGES in 
 				[Yy]|[Yy][Ee][Ss])
-					echo "You answered yes!";;
+					if [[ "$exist_group" == "$user_group" ]]; then
+						echo "$username already exists in group $user_group";
+					else
+						usermod -g $user_group $username;
+					fi
+					;;
 				[Nn]|[Nn][Oo])
 					echo "Changes of user $username will be skipped!";;
 				*)
@@ -59,4 +65,3 @@ else
 	echo "$FILE_USERS doesn't exist"
 	echo "You need to create a new file?"
 fi
-
